@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>タイピングクエスト 〜伝説の勇者〜</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- カスタムアニメーション -->
+    <style>
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fade-in {
+        animation: fade-in 1s ease forwards;
+      }
+
+      @keyframes bg-pan {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+      .fancy-bg {
+        background-size: 200% 200%;
+        animation: bg-pan 18s linear infinite;
+      }
+    </style>
+
+    <!-- React & Babel CDN -->
+    <script
+      src="https://unpkg.com/react@18/umd/react.development.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+      crossorigin
+    ></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+
+  <body class="bg-black">
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useRef } = React;
+
+      const T = () => {
+        const [sc, setSc] = useState("title");
+        const [nm, setNm] = useState("");
+        const [p, setP] = useState({
+          name: "",
+          lv: 1,
+          exp: 0,
+          expN: 100,
+          hp: 100,
+          mHp: 100,
+          mp: 50,
+          mMp: 50,
+          atk: 10,
+          def: 5,
+          g: 0,
+          w: 0,
+          a: 0,
+          ac: null,
+          sk: [0, 1],
+          bc: 0,
+          cc: 0,
+          pc: 0,
+          dd: 0,
+          dm: 0,
+          dl: 0
+        });
+        const [b, setB] = useState({
+          act: 0,
+          e: null,
+          wd: "",
+          inp: "",
+          cmb: 0,
+          df: 0,
+          log: [],
+          s: 0
+        });
+        const [ar, setAr] = useState(0);
+        const [mn, setMn] = useState("");
+        // 演出モード: false = ノーマル / true = 豪華
+        const [fx, setFx] = useState(false);
+
+        const inp = useRef(null);
+
+        const W = [
+          { n: "木の剣", a: 5, p: 0 },
+          { n: "鉄の剣", a: 15, p: 200 },
+          { n: "鋼鉄の剣", a: 30, p: 800 },
+          { n: "聖剣", a: 50, p: 3000 },
+          { n: "魔剣", a: 70, p: 5000 },
+          { n: "竜剣", a: 100, p: 10000 }
+        ];
+        const A = [
+          { n: "布服", d: 3, p: 0 },
+          { n: "革鎧", d: 8, p: 150 },
+          { n: "鎖鎧", d: 15, p: 600 },
+          { n: "板金鎧", d: 25, p: 2000 },
+          { n: "竜鱗", d: 40, p: 8000 }
+        ];
+        const AC = [
+          { n: "力の指輪", t: 0, v: 10, p: 500 },
+          { n: "守りの指輪", t: 1, v: 10, p: 500 },
+          { n: "HPお守り", t: 2, v: 50, p: 800 },
+          { n: "MPお守り", t: 3, v: 30, p: 800 },
+          { n: "会心の指輪", t: 4, v: 20, p: 2000 },
+          { n: "経験値お守り", t: 5, v: 50, p: 3000 }
+        ];
+        const SK = [
+          {
+            n: "攻撃",
+            m: 0,
+            pw: 1,
+            w: ["attack", "strike", "slash", "smash", "cut"],
+            t: 0
+          },
+          {
+            n: "防御",
+            m: 5,
+            pw: 0,
+            w: ["defend", "guard", "block", "protect"],
+            t: 1
+          },
+          {
+            n: "ファイア",
+            m: 15,
+            pw: 2,
+            w: ["fireball", "flame", "inferno", "blaze"],
+            t: 0
+          },
+          {
+            n: "アイス",
+            m: 15,
+            pw: 2,
+            w: ["ice", "freeze", "frost", "glacier"],
+            t: 0
+          },
+          {
+            n: "サンダー",
+            m: 20,
+            pw: 2.5,
+            w: ["thunder", "lightning", "bolt", "storm"],
+            t: 0
+          },
+          {
+            n: "ヒール",
+            m: 10,
+            pw: 0,
+            w: ["heal", "cure", "recover", "restore"],
+            t: 2
+          },
+          {
+            n: "アルテマ",
+            m: 50,
+            pw: 5,
+            w: ["ultima", "destruction", "annihilation"],
+            t: 0
+          }
+        ];
+        const EN = [
+          {
+            n: "スライム",
+            hp: 30,
+            a: 5,
+            d: 2,
+            exp: 10,
+            g: 20,
+            w: ["slime", "goop", "blob"],
+            am: ["体当たり!", "ぷるぷる"],
+            dm: ["溶けた!"]
+          },
+          {
+            n: "ゴブリン",
+            hp: 50,
+            a: 8,
+            d: 3,
+            exp: 20,
+            g: 40,
+            w: ["goblin", "monster", "fiend"],
+            am: ["襲いかかる!", "棍棒!"],
+            dm: ["倒れた!"]
+          },
+          {
+            n: "スケルトン",
+            hp: 70,
+            a: 12,
+            d: 5,
+            exp: 35,
+            g: 60,
+            w: ["skeleton", "bones", "undead"],
+            am: ["骨が襲う!", "カラカラ"],
+            dm: ["砕けた!"]
+          },
+          {
+            n: "オーク",
+            hp: 100,
+            a: 15,
+            d: 8,
+            exp: 50,
+            g: 100,
+            w: ["orc", "warrior", "brute"],
+            am: ["強烈な一撃!", "大斧!"],
+            dm: ["倒れた!"]
+          },
+          {
+            n: "ドラゴン",
+            hp: 200,
+            a: 25,
+            d: 15,
+            exp: 150,
+            g: 500,
+            w: ["dragon", "wyvern", "wyrm"],
+            am: ["灼熱の炎!", "咆哮!"],
+            dm: ["倒れた!"]
+          },
+          {
+            n: "悪魔",
+            hp: 250,
+            a: 30,
+            d: 20,
+            exp: 200,
+            g: 800,
+            w: ["demon", "devil", "fiend"],
+            am: ["呪い!", "闇の波動!"],
+            dm: ["消滅した!"]
+          },
+          {
+            n: "魔王",
+            hp: 500,
+            a: 40,
+            d: 30,
+            exp: 500,
+            g: 2000,
+            w: ["darkness", "chaos", "apocalypse"],
+            am: ["黒魔法!", "破滅の予兆!"],
+            dm: ["倒された..."]
+          }
+        ];
+        const AR = [
+          { n: "始まりの町", c: "from-blue-400 to-green-500" },
+          {
+            n: "東の森",
+            es: [0, 1],
+            c: "from-green-600 to-emerald-700",
+            l: 1
+          },
+          {
+            n: "暗黒洞窟",
+            es: [2, 1, 3],
+            c: "from-gray-700 to-gray-900",
+            l: 5
+          },
+          {
+            n: "険しい山",
+            es: [3, 4],
+            c: "from-orange-600 to-red-700",
+            l: 10
+          },
+          {
+            n: "魔王城",
+            es: [5, 6],
+            c: "from-purple-900 to-black",
+            l: 15
+          }
+        ];
+
+        const gS = () => {
+          let at = p.atk + W[p.w].a;
+          let df = p.def + A[p.a].d;
+          let mh = p.mHp;
+          let mm = p.mMp;
+          if (p.ac !== null) {
+            const ac = AC[p.ac];
+            if (ac.t === 0) at += ac.v;
+            if (ac.t === 1) df += ac.v;
+            if (ac.t === 2) mh += ac.v;
+            if (ac.t === 3) mm += ac.v;
+          }
+          return { at, df, mh, mm };
+        };
+
+        const stB = (t) => {
+          const e = EN[t];
+          setB({
+            act: 1,
+            e: { ...e, chp: e.hp, mhp: e.hp },
+            wd: "",
+            inp: "",
+            cmb: 0,
+            df: 0,
+            log: ["戦闘開始!", `${e.n}が現れた!`],
+            s: 0
+          });
+          setSc("battle");
+        };
+
+        const selS = (id) => {
+          const s = SK[id];
+          if (p.mp < s.m) {
+            aL("MP不足!");
+            return;
+          }
+          const wd = s.w[Math.floor(Math.random() * s.w.length)];
+          setB((pv) => ({ ...pv, wd, inp: "", s: id }));
+          setMn("");
+          setTimeout(() => inp.current?.focus(), 100);
+        };
+
+        const hInp = (e) => {
+          const v = e.target.value;
+          if (v === b.wd) {
+            ex();
+            setB((pv) => ({ ...pv, inp: "", wd: "" }));
+          } else {
+            setB((pv) => ({ ...pv, inp: v }));
+          }
+        };
+
+        const ex = () => {
+          const s = SK[b.s];
+          const st = gS();
+
+          if (s.t === 0) {
+            const cr = Math.random() < 0.15;
+            let dm = Math.floor(st.at * s.pw * (cr ? 2.5 : 1));
+            dm = Math.max(1, dm - b.e.d);
+            if (cr) {
+              aL("★クリティカル!");
+              setP((pv) => ({ ...pv, cc: pv.cc + 1 }));
+            }
+            aL(`${s.n}! ${dm}ダメージ!`);
+            const nhp = Math.max(0, b.e.chp - dm);
+            setB((pv) => ({
+              ...pv,
+              e: { ...pv.e, chp: nhp },
+              cmb: pv.cmb + 1
+            }));
+            if (nhp <= 0) {
+              setTimeout(wn, 800);
+              return;
+            }
+          } else if (s.t === 1) {
+            setB((pv) => ({ ...pv, df: 1 }));
+            aL("防御態勢!");
+          } else if (s.t === 2) {
+            setP((pv) => ({
+              ...pv,
+              hp: Math.min(st.mh, pv.hp + 50)
+            }));
+            aL("HP50回復!");
+          }
+
+          setP((pv) => ({ ...pv, mp: pv.mp - s.m }));
+          setTimeout(eT, 1200);
+        };
+
+        const eT = () => {
+          const st = gS();
+          const msg = b.e.am[Math.floor(Math.random() * b.e.am.length)];
+          aL(msg);
+          let dm = b.e.a;
+          if (b.df) {
+            dm = Math.floor(dm * 0.5);
+            aL("防御で軽減!");
+          }
+          dm = Math.max(1, dm - st.df);
+          aL(`${dm}ダメージ!`);
+
+          setP((pv) => {
+            const nhp = Math.max(0, pv.hp - dm);
+            if (nhp === 0) setTimeout(ov, 800);
+            return { ...pv, hp: nhp };
+          });
+          setB((pv) => ({ ...pv, df: 0 }));
+        };
+
+        const wn = () => {
+          const msg = b.e.dm[Math.floor(Math.random() * b.e.dm.length)];
+          aL(msg);
+          aL(`経験値${b.e.exp}、${b.e.g}G獲得!`);
+          const pf = p.hp === gS().mh;
+          if (pf) {
+            aL("★パーフェクト!");
+            setP((pv) => ({ ...pv, pc: pv.pc + 1 }));
+          }
+          if (b.cmb >= 5) aL(`${b.cmb}コンボ!`);
+
+          setP((pv) => {
+            let u = {
+              exp: pv.exp + b.e.exp,
+              g: pv.g + b.e.g,
+              bc: pv.bc + 1
+            };
+            if (b.e.n === "ドラゴン") u.dd = 1;
+            if (b.e.n === "悪魔") u.dm = 1;
+            if (b.e.n === "魔王") u.dl = 1;
+            return { ...pv, ...u };
+          });
+
+          setTimeout(() => {
+            lvU();
+            setB((pv) => ({ ...pv, act: 0 }));
+            setSc(ar);
+          }, 3000);
+        };
+
+        const lvU = () => {
+          setP((pv) => {
+            if (pv.exp >= pv.expN) {
+              const lv = pv.lv + 1;
+              aL(`★レベル${lv}!`);
+              const ns = [...pv.sk];
+              if (lv === 3 && !ns.includes(2)) {
+                ns.push(2);
+                aL("ファイア習得!");
+              }
+              if (lv === 5 && !ns.includes(3)) {
+                ns.push(3);
+                aL("アイス習得!");
+              }
+              if (lv === 8 && !ns.includes(4)) {
+                ns.push(4);
+                aL("サンダー習得!");
+              }
+              if (lv === 10 && !ns.includes(5)) {
+                ns.push(5);
+                aL("ヒール習得!");
+              }
+              if (lv === 15 && !ns.includes(6)) {
+                ns.push(6);
+                aL("アルテマ習得!");
+              }
+              return {
+                ...pv,
+                lv,
+                exp: pv.exp - pv.expN,
+                expN: pv.expN + 50 * lv,
+                mHp: pv.mHp + 20,
+                hp: pv.mHp + 20,
+                mMp: pv.mMp + 10,
+                mp: pv.mMp + 10,
+                atk: pv.atk + 5,
+                def: pv.def + 3,
+                sk: ns
+              };
+            }
+            return pv;
+          });
+        };
+
+        const ov = () => {
+          aL("力尽きた...");
+          setTimeout(() => {
+            const st = gS();
+            setP((pv) => ({
+              ...pv,
+              hp: Math.floor(st.mh / 2),
+              mp: Math.floor(st.mm / 2),
+              g: Math.floor(pv.g * 0.7)
+            }));
+            setB((pv) => ({ ...pv, act: 0 }));
+            setAr(0);
+            setSc(0);
+            aL("町で目覚めた...");
+          }, 2000);
+        };
+
+        const aL = (m) => {
+          setB((pv) => ({
+            ...pv,
+            log: [...pv.log.slice(-7), m]
+          }));
+        };
+
+        const rst = () => {
+          if (p.g >= 50) {
+            const st = gS();
+            setP((pv) => ({
+              ...pv,
+              hp: st.mh,
+              mp: st.mm,
+              g: pv.g - 50
+            }));
+            alert("ぐっすり眠った!HP・MP全回復!");
+          } else alert("ゴールド不足!(50G必要)");
+        };
+
+        const by = (t, id) => {
+          const its = t === 0 ? W : t === 1 ? A : AC;
+          const it = its[id];
+          if (p.g >= it.p) {
+            const k = t === 0 ? "w" : t === 1 ? "a" : "ac";
+            setP((pv) => ({
+              ...pv,
+              g: pv.g - it.p,
+              [k]: id
+            }));
+            alert(`${it.n}を購入!`);
+          } else alert("ゴールド不足!");
+        };
+
+        const enc = () => {
+          const a = AR[ar];
+          if (!a.es) return;
+          const t = a.es[Math.floor(Math.random() * a.es.length)];
+          stB(t);
+        };
+
+        // 画面: タイトル
+        if (sc === "title")
+          return (
+            <div className="min-h-screen bg-gradient-to-b from-purple-900 via-indigo-900 to-black flex items-center justify-center p-4">
+              <div className={"text-center max-w-2xl " + (fx ? "drop-shadow-[0_0_25px_rgba(251,191,36,0.7)]" : "")}>
+                <h1 className="text-8xl font-bold mb-4 animate-pulse text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-pink-600">
+                  タイピング
+                </h1>
+                <h1 className="text-8xl font-bold mb-6 animate-pulse text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600">
+                  クエスト
+                </h1>
+                <p className="text-4xl text-yellow-300 mb-4">〜伝説の勇者〜</p>
+                <div className="bg-black/50 p-8 rounded-2xl border-2 border-yellow-500/50">
+                  <input
+                    type="text"
+                    placeholder="勇者の名前"
+                    value={nm}
+                    onChange={(e) => setNm(e.target.value)}
+                    className="w-full p-4 rounded-lg bg-gray-900 text-white text-2xl mb-6 outline-none border-2 border-blue-500 focus:border-yellow-400"
+                    maxLength={10}
+                  />
+                  <button
+                    onClick={() => {
+                      if (nm.trim()) {
+                        setP((pv) => ({ ...pv, name: nm }));
+                        setSc("intro");
+                      }
+                    }}
+                    disabled={!nm.trim()}
+                    className="w-full py-4 bg-gradient-to-r from-yellow-500 to-red-600 rounded-lg text-2xl font-bold hover:scale-105 transition-all disabled:opacity-50"
+                  >
+                    冒険を始める
+                  </button>
+                </div>
+                <div className="mt-8 text-gray-400 text-sm space-y-2">
+                  <p>🎮 タイピングで戦うRPG</p>
+                  <p>⚔️ スキル、装備、レベルアップ</p>
+                  <p>🐉 強敵・ボス戦・隠し要素満載</p>
+                </div>
+              </div>
+            </div>
+          );
+
+        // 画面: 導入
+        if (sc === "intro")
+          return (
+            <div className="min-h-screen bg-black flex items-center justify-center p-8">
+              <div className="max-w-3xl space-y-8">
+                {[
+                  "遥か昔、この世界は光に満ちていた...",
+                  "しかし、魔王の復活により闇が世界を覆った",
+                  "伝説の勇者よ、立ち上がれ!",
+                  "タイピングの力で世界を救うのだ!"
+                ].map((l, i) => (
+                  <p
+                    key={i}
+                    className="text-3xl text-white opacity-0 animate-fade-in"
+                    style={{
+                      animationDelay: `${i * 2}s`,
+                      animationFillMode: "forwards"
+                    }}
+                  >
+                    {l}
+                  </p>
+                ))}
+                <button
+                  onClick={() => {
+                    setAr(0);
+                    setSc(0);
+                  }}
+                  className="mt-12 px-12 py-6 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-xl text-2xl font-bold hover:scale-110 transition-all opacity-0 animate-fade-in"
+                  style={{ animationDelay: "8s", animationFillMode: "forwards" }}
+                >
+                  始まりの町へ →
+                </button>
+              </div>
+            </div>
+          );
+
+        const st = gS();
+
+        // フィールド/町/エリア画面
+        if (sc === 0 || (sc !== "battle" && sc !== "title" && sc !== "intro")) {
+          const a = AR[ar];
+          const bgClasses =
+            "min-h-screen bg-gradient-to-b " +
+            a.c +
+            " p-4 " +
+            (fx ? "fancy-bg bg-[radial-gradient(circle_at_top,_rgba(251,191,36,0.25)_0,_transparent_60%),radial-gradient(circle_at_bottom,_rgba(56,189,248,0.25)_0,_transparent_60%)]" : "");
+
+          return (
+            <div className={bgClasses}>
+              <div className="max-w-6xl mx-auto">
+                {/* 演出モードトグル */}
+                <div className="flex justify-end mb-2">
+                  <button
+                    onClick={() => setFx((v) => !v)}
+                    className={"px-3 py-1 rounded-full text-xs font-bold border border-white/40 bg-black/50 text-white hover:bg-white/10 " + (fx ? "shadow-[0_0_12px_rgba(251,191,36,0.9)]" : "")}
+                  >
+                    演出: {fx ? "豪華" : "ノーマル"}
+                  </button>
+                </div>
+
+                {/* ステータスバー */}
+                <div className={"bg-black/70 rounded-xl p-4 mb-4 border-2 border-white/20 " + (fx ? "shadow-[0_0_30px_rgba(255,255,255,0.35)]" : "")}>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+                    <div>
+                      <p className="text-yellow-300">勇者 {p.name}</p>
+                      <p className="text-white font-bold">Lv.{p.lv}</p>
+                    </div>
+                    <div>
+                      <p className="text-red-400 text-xs flex items-center gap-1">
+                        <span>❤️ HP</span>
+                      </p>
+                      <p className="text-white font-bold">
+                        {p.hp}/{st.mh}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-blue-400 text-xs flex items-center gap-1">
+                        <span>💧 MP</span>
+                      </p>
+                      <p className="text-white font-bold">
+                        {p.mp}/{st.mm}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-yellow-400 text-xs flex items-center gap-1">
+                        <span>⭐ EXP</span>
+                      </p>
+                      <p className="text-white">
+                        {p.exp}/{p.expN}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-amber-300 text-xs flex items-center gap-1">
+                        <span>🏆 Gold</span>
+                      </p>
+                      <p className="text-white font-bold">{p.g}G</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* 左: 行動エリア */}
+                  <div className="bg-white/90 rounded-xl p-6">
+                    <h2 className="text-3xl font-bold mb-3">{a.n}</h2>
+                    {ar === 0 ? (
+                      <div className="space-y-3">
+                        <button
+                          onClick={() => setMn("shop")}
+                          className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-bold"
+                        >
+                          🛒 ショップ
+                        </button>
+                        <button
+                          onClick={rst}
+                          className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold"
+                        >
+                          🛏️ 宿屋 (50G)
+                        </button>
+                        <button
+                          onClick={() => setMn("status")}
+                          className="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-bold"
+                        >
+                          📊 ステータス
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <button
+                          onClick={enc}
+                          className={
+                            "w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold " +
+                            (fx ? "animate-pulse" : "")
+                          }
+                        >
+                          ⚔️ 敵を探す
+                        </button>
+                        <button
+                          onClick={() => {
+                            setAr(0);
+                            setSc(0);
+                          }}
+                          className="w-full py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-bold"
+                        >
+                          🏠 町に戻る
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 右: エリア選択 */}
+                  <div className="bg-white/90 rounded-xl p-6">
+                    <h3 className="text-2xl font-bold mb-4">🗺️ エリア選択</h3>
+                    <div className="space-y-2">
+                      {AR.map((a, i) => {
+                        if (i === 0) return null;
+                        const lk = p.lv < (a.l || 0);
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => !lk && (setAr(i), setSc(i))}
+                            disabled={lk}
+                            className={
+                              "w-full p-3 rounded-lg font-bold text-left text-white " +
+                              (lk
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600")
+                            }
+                          >
+                            {a.n} {lk && `(Lv${a.l}〜)`}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* モーダル: ショップ */}
+                {mn === "shop" && (
+                  <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                      <h2 className="text-3xl font-bold mb-6">🛒 ショップ</h2>
+
+                      <div className="mb-6">
+                        <h3 className="text-xl font-bold mb-3">⚔️ 武器</h3>
+                        <div className="grid md:grid-cols-2 gap-3">
+                          {W.map((w, i) => (
+                            <div
+                              key={i}
+                              className={
+                                "p-3 rounded-lg border-2 " +
+                                (p.w === i
+                                  ? "border-yellow-500 bg-yellow-50"
+                                  : "border-gray-300")
+                              }
+                            >
+                              <p className="font-bold">
+                                {w.n} ({w.p}G) ATK+{w.a}
+                              </p>
+                              {p.w !== i && (
+                                <button
+                                  onClick={() => by(0, i)}
+                                  className="px-4 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                                >
+                                  購入
+                                </button>
+                              )}
+                              {p.w === i && (
+                                <span className="text-yellow-600 font-bold text-sm">
+                                  装備中
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="mb-6">
+                        <h3 className="text-xl font-bold mb-3">🛡️ 防具</h3>
+                        <div className="grid md:grid-cols-2 gap-3">
+                          {A.map((a, i) => (
+                            <div
+                              key={i}
+                              className={
+                                "p-3 rounded-lg border-2 " +
+                                (p.a === i
+                                  ? "border-yellow-500 bg-yellow-50"
+                                  : "border-gray-300")
+                              }
+                            >
+                              <p className="font-bold">
+                                {a.n} ({a.p}G) DEF+{a.d}
+                              </p>
+                              {p.a !== i && (
+                                <button
+                                  onClick={() => by(1, i)}
+                                  className="px-4 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                                >
+                                  購入
+                                </button>
+                              )}
+                              {p.a === i && (
+                                <span className="text-yellow-600 font-bold text-sm">
+                                  装備中
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="mb-6">
+                        <h3 className="text-xl font-bold mb-3">💍 アクセサリー</h3>
+                        <div className="grid md:grid-cols-2 gap-3">
+                          {AC.map((a, i) => (
+                            <div
+                              key={i}
+                              className={
+                                "p-3 rounded-lg border-2 " +
+                                (p.ac === i
+                                  ? "border-yellow-500 bg-yellow-50"
+                                  : "border-gray-300")
+                              }
+                            >
+                              <p className="font-bold">
+                                {a.n} ({a.p}G)
+                              </p>
+                              {p.ac !== i && (
+                                <button
+                                  onClick={() => by(2, i)}
+                                  className="px-4 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                                >
+                                  購入
+                                </button>
+                              )}
+                              {p.ac === i && (
+                                <span className="text-yellow-600 font-bold text-sm">
+                                  装備中
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => setMn("")}
+                        className="w-full py-3 bg-gray-500 text-white rounded-lg font-bold hover:bg-gray-600"
+                      >
+                        閉じる
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* モーダル: ステータス */}
+                {mn === "status" && (
+                  <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-xl p-6 max-w-2xl w-full">
+                      <h2 className="text-3xl font-bold mb-6">📊 ステータス</h2>
+                      <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="bg-red-100 p-4 rounded-lg">
+                          <div className="text-2xl mb-2">⚔️</div>
+                          <p className="font-bold">攻撃力: {st.at}</p>
+                        </div>
+                        <div className="bg-blue-100 p-4 rounded-lg">
+                          <div className="text-2xl mb-2">🛡️</div>
+                          <p className="font-bold">防御力: {st.df}</p>
+                        </div>
+                      </div>
+
+                      <div className="mb-6">
+                        <h3 className="text-xl font-bold mb-3">装備中</h3>
+                        <p>⚔️ {W[p.w].n}</p>
+                        <p>🛡️ {A[p.a].n}</p>
+                        <p>💍 {p.ac !== null ? AC[p.ac].n : "なし"}</p>
+                      </div>
+
+                      <div className="mb-6">
+                        <h3 className="text-xl font-bold mb-3">習得スキル</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                          {p.sk.map((s) => (
+                            <div key={s} className="bg-purple-100 p-2 rounded">
+                              <p className="font-bold">{SK[s].n}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => setMn("")}
+                        className="w-full py-3 bg-gray-500 text-white rounded-lg font-bold hover:bg-gray-600"
+                      >
+                        閉じる
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        // 戦闘画面
+        if (sc === "battle")
+          return (
+            <div className={"min-h-screen bg-gradient-to-b from-red-900 via-gray-900 to-black p-4 " + (fx ? "fancy-bg" : "")}>
+              <div className="max-w-5xl mx-auto">
+                <div className="grid md:grid-cols-2 gap-4 mb-6">
+                  {/* プレイヤー側 */}
+                  <div className={"rounded-xl p-6 border-2 bg-blue-900/80 border-blue-500 " + (fx ? "shadow-[0_0_25px_rgba(59,130,246,0.9)]" : "")}>
+                    <h3 className="text-2xl font-bold text-white mb-4">
+                      {p.name}
+                    </h3>
+                    <div className="space-y-2">
+                      {/* HP */}
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-white">HP</span>
+                          <span className="text-white font-bold">
+                            {p.hp}/{st.mh}
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-red-500 to-green-500 h-4 rounded-full"
+                            style={{ width: `${(p.hp / st.mh) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                      {/* MP */}
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-white">MP</span>
+                          <span className="text-white font-bold">
+                            {p.mp}/{st.mm}
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-blue-500 to-purple-500 h-4 rounded-full"
+                            style={{ width: `${(p.mp / st.mm) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                      <p className="text-yellow-300 font-bold">
+                        Lv.{p.lv} | ATK:{st.at} DEF:{st.df}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 敵側 */}
+                  <div className={"rounded-xl p-6 border-2 bg-red-900/80 border-red-500 " + (fx ? "shadow-[0_0_25px_rgba(248,113,113,0.9)]" : "")}>
+                    <h3 className="text-2xl font-bold text-white mb-4">
+                      {b.e.n}
+                    </h3>
+                    <div className="space-y-2">
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-white">HP</span>
+                          <span className="text-white font-bold">
+                            {b.e.chp}/{b.e.mhp}
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-green-500 to-red-500 h-4 rounded-full"
+                            style={{
+                              width: `${(b.e.chp / b.e.mhp) * 100}%`
+                            }}
+                          />
+                        </div>
+                        <p className="text-gray-300">
+                          ATK:{b.e.a} DEF:{b.e.d}
+                        </p>
+                        {b.cmb > 0 && (
+                          <p className="text-yellow-400 font-bold animate-pulse">
+                            🔥 {b.cmb} COMBO!
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ログ */}
+                <div className="bg-black/70 rounded-xl p-4 mb-4 border-2 border-gray-700 h-40 overflow-y-auto">
+                  {b.log.map((m, i) => (
+                    <p key={i} className="text-white mb-1">
+                      {m}
+                    </p>
+                  ))}
+                </div>
+
+                {/* タイピング or スキル選択 */}
+                {b.wd ? (
+                  <div className="bg-white/90 rounded-xl p-6 mb-4">
+                    <p className="text-4xl font-mono text-center mb-4 text-gray-800">
+                      {b.wd.split("").map((c, i) => (
+                        <span
+                          key={i}
+                          className={
+                            i < b.inp.length
+                              ? b.inp[i] === c
+                                ? "text-green-600"
+                                : "text-red-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          {c}
+                        </span>
+                      ))}
+                    </p>
+                    <input
+                      ref={inp}
+                      type="text"
+                      value={b.inp}
+                      onChange={hInp}
+                      className="w-full p-4 text-3xl text-center rounded-lg border-4 border-blue-500 focus:border-yellow-400 outline-none font-mono"
+                      autoComplete="off"
+                      autoFocus
+                    />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {p.sk.map((s) => {
+                      const sk = SK[s];
+                      const cu = p.mp >= sk.m;
+                      return (
+                        <button
+                          key={s}
+                          onClick={() => cu && selS(s)}
+                          disabled={!cu}
+                          className={
+                            "p-4 rounded-xl font-bold text-white transition-all " +
+                            (cu
+                              ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transform hover:scale-105"
+                              : "bg-gray-600 cursor-not-allowed opacity-50")
+                          }
+                        >
+                          <p className="text-lg">{sk.n}</p>
+                          <p className="text-sm">MP:{sk.m}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+
+        return null;
+      };
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<T />);
+    </script>
+  </body>
+</html>
